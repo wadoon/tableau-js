@@ -35,5 +35,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "ts-pegjs": "^0.2.6",
+    "pegjs": "^0.10.0"
   }
 }
