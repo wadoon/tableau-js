@@ -7,7 +7,7 @@ FormulaQ
         prefix.forEach((elem,id) => {
         	value = {'op':elem[0],
             		 'bind': elem[2].join(""),
-            	   	 'args':value}
+            	   	 'args': [value] }
         
         });
     	return value;
@@ -18,7 +18,7 @@ FormulaImp
     {
     	if(b.length>0){
     	    const args = [a]
-            //b.forEach( (elem, id) => { args.push(elem[1]); });
+            b.forEach( (elem, id) => { args.push(elem[3]); });
     		return {'op':'imp', 'args' : args};
     	}
     	else return a;   
@@ -29,7 +29,7 @@ FormulaOr
     {
      	if(b.length > 0){
     		const args = [a]
-            b.forEach( (elem, id) => { args.push(elem[1]); });
+            b.forEach( (elem, id) => { args.push(elem[3]); });
     		return {'op':'or', 'args' : args};
     	}
     	else return a;   
@@ -41,7 +41,7 @@ FormulaAnd
     {
     	if(b.length > 0){
         	const args = [a]
-            b.forEach( (elem, id) => { args.push(elem[1]); });
+            b.forEach( (elem, id) => { args.push(elem[3]); });
     		return {'op':'and', 'args' : args};
     	}
     	else return a;   
