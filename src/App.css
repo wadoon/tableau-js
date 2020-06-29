@@ -1,6 +1,13 @@
-.App {
-
+[draggable] {
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+  /* Required to make elements draggable in old WebKit */
+  -khtml-user-drag: element;
+  -webkit-user-drag: element;
 }
+
 
 #enterFormula {
   border: 1px solid #282c34;  
@@ -34,17 +41,62 @@
   color: white;
 }
 
-.tableau {
-  text-align: center;
+.tableau {  
   font-size: 120%;
-  }
+  width: 100%;
+  height: 1024px;
+  margin:0;  
+}
+
+.tableau canvas {
+  position: absolute;
+  left:0; top:0;
+  z-index: -5;
+}
 
 .node {
+  padding:5px;
   border: 1px solid gray;
-  width: auto;
   display: inline;
   cursor: pointer;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background:white;
 }
+
+.node.over {
+  background:gray;
+}
+
+.goal {
+  background:white;
+  display: inline;
+  cursor: pointer;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border: 1px solid #20a0ff;
+}
+
+.goal span {
+  text-align: center;
+  padding: 10px;
+  margin: 5px;
+  border: 1px solid gray;
+  border-radius: 20px;
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1em;
+}
+
+.goal span.over-ok {
+  background:#25de25;
+}
+.goal span.over-err {
+  background:#de2525;
+}
+
 
 /***********************/
 .react-contextmenu {
