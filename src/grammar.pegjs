@@ -1,4 +1,3 @@
-
 FormulaQ
   = prefix:(q:('forall' / 'exists') __ v:[a-zA-Z]+ _ '.' __)* 
     imp:FormulaImp 
@@ -73,14 +72,12 @@ Predicate
     	return a
     }	
 Term
-  = variable:[a-zA-Z]+
-  	{
-    	return {'op': 'var', 'name': text() }
-    }	
-  / func:[a-zA-Z]+ args:'(' _ Term (_ ',' _ Term)* _ ')' 
+  = func:[a-zA-Z]+ args:('(' _ Term (_ ',' _ Term)* _ ')')?
   	{
     	return {'op': 'term', 'name': func.join(""), 'args': 
-        	args.filter(i => typeof(i)!="string" && i.length!=0) 
+            args != null 
+        	? args.filter(i => typeof(i)!="string" && i.length!=0)
+            : []
         }
     }	
     

@@ -48,6 +48,7 @@ class App extends Component<{}, AppState> {
   }
 }
 
+/// Term thingies
 interface Term {
   op: string
   bind: string | void
@@ -86,6 +87,37 @@ function substitute(t: Term, bounded: string, arg: Term): Term {
   }
   return t
 }
+
+function rewriteVars(t: Term, vars: Array<string> = []) {
+  switch (t.op) {
+    case "not":
+    case "imp":
+    case "or":
+    case "and":
+    case "predicate":
+    case "var":
+      for (const key in t.args) {
+        t.args[key] = rewriteVars(t.args[key], vars)
+      }
+      break;
+    case 'term':
+      if (t.args.length == 0 && vars.includes(t.name !== undefined ? t.name : "")) {
+        t.op = "var"
+      }
+    case "exists":
+    case "forall":
+      if (t.bind != undefined) {
+        vars.push(t.bind)
+        for (const key in t.args) {
+          t.args[key] = rewriteVars(t.args[key], vars)
+        }
+        vars.pop()
+      }
+  }
+  return t
+}
+
+/// end term 
 
 
 
@@ -175,9 +207,24 @@ class PNode {
   goal: boolean = false
   closed: boolean = false
 
+  freeVar: string | null = null
+
   constructor(negated: boolean, term: Term | null) {
     this.term = term;
     this.positive = negated;
+  }
+
+  freeVars() {
+    let cur: PNode | null = this
+    let vars: Array<Term> = []
+    while (cur != null) {
+      if (cur.freeVar != null) {
+        const fV: Term = { op: "var", name: cur.freeVar, bind: undefined, args: [] }
+        vars.push(fV)
+      }
+      cur = cur.parent
+    }
+    return vars
   }
 
   appendGoal() {
@@ -220,7 +267,7 @@ class TableauView extends Component<TableauProps, TableauState> {
     this.setState({ tree: t })
   }
 
-  DX = 50
+  DX = 200
   DY = 50
 
   maintain(node: PNode) {
@@ -233,9 +280,15 @@ class TableauView extends Component<TableauProps, TableauState> {
       if (singleChild) {
         c.x = node.x
       } else {
-        const mid = node.children.length / 2
-        const pos = (i - mid)
-        c.x = node.x - (pos * this.DX)
+        if (node.children.length % 2 != 0) {
+          const mid = node.children.length / 2
+          const pos = (i - mid)
+          c.x = node.x - (pos * this.DX)
+        } else {
+          const mid = node.children.length / 2
+          const pos = i < mid ? -i : i;
+          c.x = node.x - (pos * this.DX)
+        }
       }
       goals += this.maintain(c)
     })
@@ -249,7 +302,8 @@ class TableauView extends Component<TableauProps, TableauState> {
 
     if (t == null || parent == null) return;
     if (!r.applicable(n, t)) return
-    let children = r.apply(n, t);
+    const freeVars = goal.freeVars()
+    let children = r.apply(n, t, freeVars);
     if (r.type == "beta") {
       parent.children = children
       for (let c of children) c.appendGoal()
@@ -329,6 +383,7 @@ class TableauView extends Component<TableauProps, TableauState> {
 
 function renderTerm(term: Term): JSX.Element {
   switch (term.op) {
+    case "term":
     case "predicate":
       let args: Array<JSX.Element> = []
       if (term.args.length > 0) {
@@ -537,8 +592,10 @@ class NodeView extends Component<NodeProps, NodeState> {
     }
     if (draggedNode != null) {
       const [p, t] = [draggedNode.positive, draggedNode.term]
-      //const app = t != null && this.props.rule.applicable(p, t)
-      //this.props.applyRule(draggedNode, this.props.goal, this.props.rule)
+      const entered = window.prompt("Substitution", "Enter an unification of the terms: \" x/y | z/y ...\"")
+      //TODO unificaton
+      //TODO check for closing 
+      //TODO if so, close sub-goals
     }
     this.setState({ over: false })
     // See the section on the DataTransfer object.
@@ -588,7 +645,7 @@ class NodeView extends Component<NodeProps, NodeState> {
 class Rule {
   type: string = ""
   applicable(negated: boolean, term: Term): boolean { return false }
-  apply(negated: boolean, term: Term): Array<PNode> { return [] }
+  apply(negated: boolean, term: Term, freeVars: Array<Term> = []): Array<PNode> { return [] }
 }
 
 class AlphaRule extends Rule {
@@ -688,8 +745,10 @@ class GammaRule extends Rule {
     const bounded = t.bind
     if (bounded == undefined) throw new AssertionError()
     const c1 = copyTerm(t.args[0])
-    const c2 = substituteVar(c1, bounded, bounded.toUpperCase() + "_" + (++globalVariableCounter))
+    const freeVar = bounded.toUpperCase() + "_" + (++globalVariableCounter)
+    const c2 = substituteVar(c1, bounded, freeVar)
     let p1 = new PNode(n, c2)
+    p1.freeVar = freeVar
     return [p1]
   }
 }
@@ -706,12 +765,11 @@ class DeltaRule extends Rule {
     }
   }
 
-  apply = (n, t: Term) => {
+  apply = (n: boolean, t: Term, freeVars: Array<Term>) => {
     const bounded = t.bind
     if (bounded == undefined) throw new AssertionError()
     const c1 = copyTerm(t.args[0])
 
-    const freeVars: Array<Term> = [{ op: "var", name: "X", args: [], bind: undefined }]
     const skolemFun: Term = { op: "term", args: freeVars, name: "f" + (++globalVariableCounter), bind: undefined }
 
     const c2 = substitute(c1, bounded, skolemFun)
