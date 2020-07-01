@@ -1,13 +1,14 @@
+{
+  import { Term } from "./Term";
+}
+
 FormulaQ
   = prefix:(q:('forall' / 'exists') __ v:[a-zA-Z]+ _ '.' __)* 
     imp:FormulaImp 
     {    	
     	let value = imp;
         prefix.forEach((elem,id) => {
-        	value = {'op':elem[0],
-            		 'bind': elem[2].join(""),
-            	   	 'args': [value] }
-        
+        	value = new Term(elem[0], null, elem[2].join(""), [value])
         });
     	return value;
     }
@@ -18,7 +19,7 @@ FormulaImp
     	if(b.length>0){
     	    const args = [a]
             b.forEach( (elem, id) => { args.push(elem[3]); });
-    		return {'op':'imp', 'args' : args};
+    		return new Term("imp", null, null, args);
     	}
     	else return a;   
     }
@@ -29,7 +30,7 @@ FormulaOr
      	if(b.length > 0){
     		const args = [a]
             b.forEach( (elem, id) => { args.push(elem[3]); });
-    		return {'op':'or', 'args' : args};
+    		return new Term("or", null, null, args);
     	}
     	else return a;   
     }
@@ -41,7 +42,7 @@ FormulaAnd
     	if(b.length > 0){
         	const args = [a]
             b.forEach( (elem, id) => { args.push(elem[3]); });
-    		return {'op':'and', 'args' : args};
+    		return new Term("and", null, null, args);
     	}
     	else return a;   
     }
@@ -49,36 +50,35 @@ FormulaAnd
 FormulaNot 
   = not:(('-'_) / ('not'__))? b:Predicate
     {
-    	if(not) return {'op': 'not', 'child': [b]}
+    	if(not) return new Term("not", null, null, [b]);
     	else return b;
     }
  
 Predicate  
-  = a:[a-zA-Z]+ args:('(' _ Term _ (',' _ Term _ )* ')')?
+  = a:([a-zA-Z] [a-zA-Z0-9]*) args:('(' _ Term _ (',' _ Term _ )* ')')?
   	{
     	
-    	return {'op': 'predicate', 'name': a.join(""), 'args': 
-        	args != null
-        	? args.filter(i => typeof(i)!="string" && i.length!=0)
+    	return new Term('predicate', a.join(""), null, 
+          args != null
+        	  ? args.filter(i => typeof(i)!="string" && i.length!=0)
             : []
-        }
+      );
     }  
   / a:Term _ '=' _ b:Term
   	{
-    	return {'op': 'predicate', 'name': "eq", 'args': [a,b] }
+    	return new Term("predicate", "eq", null, [a,b]); 
     }	
   / '(' _ a:FormulaQ _ ')'
   	{
     	return a
     }	
 Term
-  = func:[a-zA-Z]+ args:('(' _ Term (_ ',' _ Term)* _ ')')?
+  = func:([a-zA-Z] [a-zA-Z0-9]*) args:('(' _ Term (_ ',' _ Term)* _ ')')?
   	{
-    	return {'op': 'term', 'name': func.join(""), 'args': 
-            args != null 
-        	? args.filter(i => typeof(i)!="string" && i.length!=0)
-            : []
-        }
+    	return new Term("term", func.join(""), null, 
+          args != null 
+        	  ? args.filter(i => typeof(i)!="string" && i.length!=0)
+            : []);
     }	
     
 // optional whitespace

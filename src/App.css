@@ -71,10 +71,19 @@
 .goal {
   background:white;
   display: inline;
-  cursor: pointer;
+  cursor: grab;
   position: absolute;
   transform: translate(-50%, -50%);
   border: 1px solid #20a0ff;
+}
+
+.goal-closed {
+  background:#a5ffa5;
+  display: inline;
+  cursor: none;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border: 1px solid #aaa0aa;
 }
 
 .goal span {
