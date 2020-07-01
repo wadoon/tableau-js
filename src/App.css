@@ -19,27 +19,48 @@
   text-align: center;
 }
 
-#enterFormula input[type=text].valid {
-  background: #25de25;
+#enterFormula textarea.valid {
+  background: #bbffbb;
 }
 
-#enterFormula input[type=text].not-valid {
-  background: #de2525;
+#enterFormula textarea.not-valid {
+  background: #ffbbbb;
 }
 
 #enterFormula input[type=submit] {
   width:100%; 
 }
 
-.App-header {
+header {
   background-color: #282c34;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  display: grid;
   font-size: calc(10px + 2vmin);
   color: white;
+  grid-template-columns: auto 5em; 
+  align-items: center;
 }
+
+header > div  {
+  text-align: center;
+}
+
+header .big { flex-grow: 10;}
+header .small{ font-size: 70%;}
+header .help { 
+
+}
+header .help a { color: black; 
+  text-decoration: none;
+  display: inline-block;
+  font-size: 45pt;
+  width:  40px;
+  height: 40px;
+  border-radius: 3em;
+  background: yellow;
+  font-size: calc(10px + 5vmin);
+}
+
+
 
 .tableau {  
   font-size: 120%;

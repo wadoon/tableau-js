@@ -38,9 +38,15 @@ class App extends Component<{}, AppState> {
 
     return (
       <div className="App">
-        <header className="App-header">
-          Tableau App
-          </header>
+        <header className="header">
+          <div>
+            <div className="big">Tableau App</div>
+            <div className="small">Proof your FOL formulae with the Tableau Calculi.</div>
+          </div>
+          <div className="help">
+            <a href="help.html">?</a>
+          </div>
+        </header>
         {content}
       </div>
     );
@@ -87,7 +93,7 @@ class EnterFormulaView
     }
   }
 
-  onChange = (e: ChangeEvent<HTMLInputElement>) => {
+  onChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.currentTarget.value;
     this.update(newValue)
   }
@@ -100,17 +106,32 @@ class EnterFormulaView
 
   }
 
+  onSelect = (e: ChangeEvent<HTMLSelectElement>) => {
+    console.log(e.currentTarget.value)
+    this.update(e.currentTarget.value)
+  }
+
   render() {
     return (
       <div id="enterFormula">
         <form onSubmit={this.onSubmit}>
+          <label htmlFor="txt">Select formula:</label>
+          <br />
+          <select onChange={this.onSelect}>
+            <optgroup label="Simple">
+              <option>(forall x. p(x)) -> (exists y. p(y))</option>
+            </optgroup>
+            <optgroup label="Exams">
+              <option> ... </option>
+            </optgroup >
+          </select>
+          <br />
           <label htmlFor="txt">Enter Formula:</label>
           <br />
-          <input id="txt" type="text"
+          <textarea cols={30} rows={10} id="txt"
             className={this.state.valid ? "valid" : "not-valid"}
             value={this.state.value}
-            onChange={this.onChange}
-          />
+            onChange={this.onChange}></textarea>
           <br />
           <input type="submit" value="Start" />
         </form>
